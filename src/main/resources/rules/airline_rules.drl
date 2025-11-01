@@ -1,0 +1,147 @@
+package rules
+
+import com.udea.drools_airline.model.Passenger
+import com.udea.drools_airline.model.Flight
+import com.udea.drools_airline.model.BookingRequest
+import com.udea.drools_airline.model.BookingResponse
+
+// Regla 1: Ascenso a clase ejecutiva para viajeros frecuentes con retrasos
+rule "UpgradeToBusinessClassForFrequentFlyersWithDelays"
+    when
+        $request : BookingRequest(
+            passenger.membershipStatus in ("Gold", "Platinum"),
+            flight.delayInMinutes > 60
+        )
+        $response : BookingResponse()
+    then
+        $response.setUpgradedToBusinessClass(true);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Ascendido a clase ejecutiva por retraso." :
+            "Ascendido a clase ejecutiva por retraso.");
+end
+
+// Regla 2: Check-in prioritario para adultos mayores
+rule "PriorityCheckInForSeniors"
+    when
+        $request : BookingRequest(passenger.age > 65)
+        $response : BookingResponse()
+    then
+        $response.setPriorityCheckIn(true);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Check-in prioritario activado." :
+            "Check-in prioritario activado.");
+end
+
+// Regla 3: Descuento por equipaje ligero
+rule "DiscountForLightLuggage"
+    when
+        $request : BookingRequest(passenger.luggageWeight < 10)
+        $response : BookingResponse()
+    then
+        $response.setDiscountApplied(10.0);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Descuento del 10% aplicado por equipaje ligero." :
+            "Descuento del 10% aplicado por equipaje ligero.");
+end
+
+// Regla 4: Negar ascenso por equipaje con sobrepeso
+rule "DenyUpgradeForOverweightLuggage"
+    when
+        $request : BookingRequest(passenger.luggageWeight > 23)
+        $response : BookingResponse()
+    then
+        $response.setEligibleForUpgrade(false);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | No elegible para ascensos debido a sobrepeso de equipaje." :
+            "No elegible para ascensos debido a sobrepeso de equipaje.");
+end
+
+// Regla 5: Asignar asiento de salida de emergencia a adultos jóvenes
+rule "AssignEmergencyExitSeatToYoungAdults"
+    when
+        $request : BookingRequest(
+            passenger.age >= 18,
+            passenger.age <= 40,
+            passenger.seatPreference == "Any",
+            flight.emergencyExitSeatAvailable == true
+        )
+        $response : BookingResponse()
+    then
+        $response.setAssignedSeat("Emergency Exit");
+        $request.getFlight().setEmergencyExitSeatAvailable(false);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Asiento de salida de emergencia asignado." :
+            "Asiento de salida de emergencia asignado.");
+end
+
+// Regla 6: Compensación por retrasos extremos
+rule "CompensationForExtremeDelays"
+    when
+        $request : BookingRequest(flight.delayInMinutes > 180)
+        $response : BookingResponse()
+    then
+        $response.setCompensation(200.0);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Compensación de $200 otorgada por retraso extremo." :
+            "Compensación de $200 otorgada por retraso extremo.");
+end
+
+// Regla 7: Puntos de lealtad extra para vuelos largos
+rule "ExtraLoyaltyPointsForLongFlights"
+    when
+        $request : BookingRequest(
+            passenger.membershipStatus != "Basic",
+            flight.durationInHours > 5
+        )
+        $response : BookingResponse()
+    then
+        $request.getPassenger().setLoyaltyPoints(
+            $request.getPassenger().getLoyaltyPoints() + 500
+        );
+        $response.setLoyaltyPointsAdded(500);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | 500 puntos de lealtad agregados." :
+            "500 puntos de lealtad agregados.");
+end
+
+// Regla 8: Restringir equipaje en vuelos cortos
+rule "RestrictLuggageOnShortFlights"
+    when
+        $request : BookingRequest(
+            passenger.luggageWeight > 15,
+            flight.durationInHours < 2
+        )
+        $response : BookingResponse()
+    then
+        $response.setLuggageAllowed(false);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Equipaje no permitido para vuelos cortos." :
+            "Equipaje no permitido para vuelos cortos.");
+end
+
+// Regla 9: Acceso a salón VIP para miembros Platinum
+rule "VipLoungeAccessForPlatinumMembers"
+    when
+        $request : BookingRequest(passenger.membershipStatus == "Platinum")
+        $response : BookingResponse()
+    then
+        $response.setVipLoungeAccess(true);
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Acceso a salón VIP otorgado." :
+            "Acceso a salón VIP otorgado.");
+end
+
+// Regla 10: Asiento preferencial para familias
+rule "PreferentialSeatForFamilies"
+    when
+        $request : BookingRequest(
+            passenger.travelingWithChildren == true,
+            passenger.seatPreference == null || passenger.seatPreference == "Any"
+        )
+        $response : BookingResponse()
+    then
+        $response.setAssignedSeat("Family Section");
+        $response.setMessage($response.getMessage() != null ?
+            $response.getMessage() + " | Asiento preferencial para familias asignado." :
+            "Asiento preferencial para familias asignado.");
+end
