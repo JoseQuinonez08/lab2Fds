@@ -20,15 +20,21 @@ public class BookingResponse {
         this.luggageAllowed = true;
     }
 
-    // Constructor con parámetros
+    // Constructor con parámetros básicos
     public BookingResponse(String passengerName, String flightNumber) {
+        this();
         this.passengerName = passengerName;
         this.flightNumber = flightNumber;
-        this.eligibleForUpgrade = true;
-        this.luggageAllowed = true;
     }
 
-    // Getters y Setters
+    // 🆕 NUEVO: Constructor para respuestas de error
+    public BookingResponse(boolean approved, double amount, double rate, String message) {
+        this();
+        this.message = message;
+        // Este constructor se usa para respuestas de validación
+    }
+
+    // Getters y Setters (los que ya tienes están bien)
     public String getPassengerName() {
         return passengerName;
     }

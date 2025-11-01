@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado de Evaluación - Sistema Aerolínea</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 25px;
+        }
+        .result-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .badge-custom {
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+        .benefit-item:hover {
+            transform: translateX(5px);
+        }
+        .benefit-item i {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        .benefit-active {
+            border-left-color: #28a745;
+        }
+        .benefit-inactive {
+            border-left-color: #6c757d;
+            opacity: 0.6;
+        }
+        .benefit-negative {
+            border-left-color: #dc3545;
+        }
+        .message-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2><i class="bi bi-clipboard-check-fill"></i> Resultado de la Evaluación</h2>
+                    <p class="mb-0">Resumen de su solicitud de reserva</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Información del Pasajero y Vuelo -->
+                    <div class="result-section">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="bi bi-person-circle"></i> Pasajero</h5>
+                                <p class="mb-0" th:text="${bookingResponse.passengerName}"></p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h5><i class="bi bi-airplane-fill"></i> Vuelo</h5>
+                                <p class="mb-0" th:text="${bookingResponse.flightNumber}"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Beneficios y Restricciones -->
+                    <h4 class="mb-3"><i class="bi bi-gift-fill"></i> Beneficios Otorgados</h4>
+
+                    <!-- Ascenso a Clase Ejecutiva -->
+                    <div th:class="${bookingResponse.upgradedToBusinessClass} ? 'benefit-item benefit-active' : 'benefit-item benefit-inactive'">
+                        <i th:class="${bookingResponse.upgradedToBusinessClass} ? 'bi bi-arrow-up-circle-fill text-success' : 'bi bi-dash-circle text-secondary'"></i>
+                        <div>
+                            <strong>Ascenso a Clase Ejecutiva</strong>
+                            <span th:text="${bookingResponse.upgradedToBusinessClass} ? ' - ¡Activado!' : ' - No aplicable'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Check-in Prioritario -->
+                    <div th:class="${bookingResponse.priorityCheckIn} ? 'benefit-item benefit-active' : 'benefit-item benefit-inactive'">
+                        <i th:class="${bookingResponse.priorityCheckIn} ? 'bi bi-lightning-fill text-warning' : 'bi bi-dash-circle text-secondary'"></i>
+                        <div>
+                            <strong>Check-in Prioritario</strong>
+                            <span th:text="${bookingResponse.priorityCheckIn} ? ' - ¡Activado!' : ' - No aplicable'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Descuento -->
+                    <div th:if="${bookingResponse.discountApplied > 0}" class="benefit-item benefit-active">
+                        <i class="bi bi-percent text-primary"></i>
+                        <div>
+                            <strong>Descuento Aplicado</strong>
+                            <span th:text="' - ' + ${bookingResponse.discountApplied} + '%'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Asiento Asignado -->
+                    <div th:if="${bookingResponse.assignedSeat != null}" class="benefit-item benefit-active">
+                        <i class="bi bi-ui-radios text-info"></i>
+                        <div>
+                            <strong>Asiento Asignado</strong>
+                            <span th:text="' - ' + ${bookingResponse.assignedSeat}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Compensación -->
+                    <div th:if="${bookingResponse.compensation > 0}" class="benefit-item benefit-active">
+                        <i class="bi bi-cash-coin text-success"></i>
+                        <div>
+                            <strong>Compensación por Retraso</strong>
+                            <span th:text="' - $' + ${#numbers.formatDecimal(bookingResponse.compensation, 0, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Puntos de Lealtad -->
+                    <div th:if="${bookingResponse.loyaltyPointsAdded > 0}" class="benefit-item benefit-active">
+                        <i class="bi bi-gem text-info"></i>
+                        <div>
+                            <strong>Puntos de Lealtad</strong>
+                            <span th:text="' - +' + ${bookingResponse.loyaltyPointsAdded} + ' puntos'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Acceso VIP -->
+                    <div th:class="${bookingResponse.vipLoungeAccess} ? 'benefit-item benefit-active' : 'benefit-item benefit-inactive'">
+                        <i th:class="${bookingResponse.vipLoungeAccess} ? 'bi bi-trophy-fill text-warning' : 'bi bi-dash-circle text-secondary'"></i>
+                        <div>
+                            <strong>Acceso a Salón VIP</strong>
+                            <span th:text="${bookingResponse.vipLoungeAccess} ? ' - ¡Activado!' : ' - No aplicable'"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Restricciones y Estado -->
+                    <h4 class="mb-3"><i class="bi bi-shield-check"></i> Estado de la Solicitud</h4>
+
+                    <!-- Elegibilidad para Ascensos -->
+                    <div th:class="${bookingResponse.eligibleForUpgrade} ? 'benefit-item benefit-active' : 'benefit-item benefit-negative'">
+                        <i th:class="${bookingResponse.eligibleForUpgrade} ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger'"></i>
+                        <div>
+                            <strong>Elegible para Ascensos</strong>
+                            <span th:text="${bookingResponse.eligibleForUpgrade} ? ' - Sí' : ' - No (equipaje con sobrepeso)'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Equipaje Permitido -->
+                    <div th:class="${bookingResponse.luggageAllowed} ? 'benefit-item benefit-active' : 'benefit-item benefit-negative'">
+                        <i th:class="${bookingResponse.luggageAllowed} ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger'"></i>
+                        <div>
+                            <strong>Equipaje Permitido</strong>
+                            <span th:text="${bookingResponse.luggageAllowed} ? ' - Sí' : ' - No (excede límite para vuelos cortos)'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje Detallado -->
+                    <div th:if="${bookingResponse.message != null}" class="message-box">
+                        <h5><i class="bi bi-info-circle-fill"></i> Detalles de la Evaluación</h5>
+                        <p class="mb-0" th:text="${bookingResponse.message}"></p>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="text-center mt-4">
+                        <a th:href="@{/booking/form}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-arrow-clockwise"></i> Nueva Solicitud
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
